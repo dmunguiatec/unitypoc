@@ -16,30 +16,30 @@ endif
 .PHONY: clean
 .PHONY: test
 
-PATHU = unity/src/
-PATHS = src/
-PATHT = test/
-PATHB = build/
-PATHD = build/depends/
-PATHO = build/objs/
-PATHR = build/results/
+PATHU = unity/src
+PATHS = src
+PATHT = test
+PATHB = build
+PATHD = build/depends
+PATHO = build/objs
+PATHR = build/results
 
-BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR)
+BUILD_PATHS = $(PATHB)/ $(PATHD)/ $(PATHO)/ $(PATHR)/
 
-SRCT = $(wildcard $(PATHT)*.c)
+SRCT = $(wildcard $(PATHT)/*.c)
 
 COMPILE=gcc -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
-CFLAGS=-I. -I$(PATHU) -I$(PATHS) -DTEST
+CFLAGS=-std=c99 -I. -I$(PATHU)/ -I$(PATHS)/ -DTEST
 
-RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT) )
+RESULTS = $(patsubst $(PATHT)/Test%.c,$(PATHR)/Test%.txt,$(SRCT) )
 
-PASSED = `grep -s PASS $(PATHR)*.txt`
-FAIL = `grep -s FAIL $(PATHR)*.txt`
-IGNORE = `grep -s IGNORE $(PATHR)*.txt`
+PASSED = `grep -s PASS $(PATHR)/*.txt`
+FAIL = `grep -s FAIL $(PATHR)/*.txt`
+IGNORE = `grep -s IGNORE $(PATHR)/*.txt`
 
-test: $(BUILD_PATHS) $(RESULTS)
+test: $(BUILD_PATHS)/ $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -48,42 +48,51 @@ test: $(BUILD_PATHS) $(RESULTS)
 	@echo "$(PASSED)"
 	@echo "\nDONE"
 
-$(PATHR)%.txt: $(PATHB)%.$(TARGET_EXTENSION)
+test_%: $(BUILD_PATHS)/ $(PATHR)/%.txt
+	@echo "-----------------------\nIGNORES:\n-----------------------"
+	@echo "`grep -s IGNORE $(PATHR)/$(subst test_,,$@).txt`"
+	@echo "-----------------------\nFAILURES:\n-----------------------"
+	@echo "`grep -s FAIL $(PATHR)/$(subst test_,,$@).txt`"
+	@echo "-----------------------\nPASSED:\n-----------------------"
+	@echo "`grep -s PASS $(PATHR)/$(subst test_,,$@).txt`"
+	@echo "\nDONE"
+
+$(PATHR)/%.txt: $(PATHB)/%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
 
-$(PATHB)Test%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o #$(PATHD)Test%.d
+$(PATHB)/Test%.$(TARGET_EXTENSION): $(PATHO)/Test%.o $(PATHO)/%.o $(PATHU)/unity.o #$(PATHD)/Test%.d
 	$(LINK) -o $@ $^
 
-$(PATHO)%.o:: $(PATHT)%.c
+$(PATHO)/%.o:: $(PATHT)/%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
-$(PATHO)%.o:: $(PATHS)%.c
+$(PATHO)/%.o:: $(PATHS)/%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
-$(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
+$(PATHO)/%.o:: $(PATHU)/%.c $(PATHU)/%.h
 	$(COMPILE) $(CFLAGS) $< -o $@
 
-$(PATHD)%.d:: $(PATHT)%.c
+$(PATHD)/%.d:: $(PATHT)/%.c
 	$(DEPEND) $@ $<
 
-$(PATHB):
-	$(MKDIR) $(PATHB)
+$(PATHB)/:
+	$(MKDIR) $(PATHB)/
 
-$(PATHD):
-	$(MKDIR) $(PATHD)
+$(PATHD)/:
+	$(MKDIR) $(PATHD)/
 
-$(PATHO):
-	$(MKDIR) $(PATHO)
+$(PATHO)/:
+	$(MKDIR) $(PATHO)/
 
-$(PATHR):
-	$(MKDIR) $(PATHR)
+$(PATHR)/:
+	$(MKDIR) $(PATHR)/
 
 clean:
-	$(CLEANUP) $(PATHO)*.o
-	$(CLEANUP) $(PATHB)*.$(TARGET_EXTENSION)
-	$(CLEANUP) $(PATHR)*.txt
+	$(CLEANUP) $(PATHO)/*.o
+	$(CLEANUP) $(PATHB)/*.$(TARGET_EXTENSION)
+	$(CLEANUP) $(PATHR)/*.txt
 
-.PRECIOUS: $(PATHB)Test%.$(TARGET_EXTENSION)
-.PRECIOUS: $(PATHD)%.d
-.PRECIOUS: $(PATHO)%.o
-.PRECIOUS: $(PATHR)%.txt
+.PRECIOUS: $(PATHB)/Test%.$(TARGET_EXTENSION)
+.PRECIOUS: $(PATHD)/%.d
+.PRECIOUS: $(PATHO)/%.o
+.PRECIOUS: $(PATHR)/%.txt
