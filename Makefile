@@ -39,7 +39,7 @@ PASSED = `grep -s PASS $(PATHR)/*.txt`
 FAIL = `grep -s FAIL $(PATHR)/*.txt`
 IGNORE = `grep -s IGNORE $(PATHR)/*.txt`
 
-test: $(BUILD_PATHS)/ $(RESULTS)
+test: $(BUILD_PATHS) $(RESULTS)
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -48,7 +48,7 @@ test: $(BUILD_PATHS)/ $(RESULTS)
 	@echo "$(PASSED)"
 	@echo "\nDONE"
 
-test_%: $(BUILD_PATHS)/ $(PATHR)/%.txt
+test_%: $(BUILD_PATHS) $(PATHR)/%.txt
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "`grep -s IGNORE $(PATHR)/$(subst test_,,$@).txt`"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -56,6 +56,7 @@ test_%: $(BUILD_PATHS)/ $(PATHR)/%.txt
 	@echo "-----------------------\nPASSED:\n-----------------------"
 	@echo "`grep -s PASS $(PATHR)/$(subst test_,,$@).txt`"
 	@echo "\nDONE"
+	@exit $(shell grep -c FAIL $(PATHR)/$(subst test_,,$@).txt)
 
 $(PATHR)/%.txt: $(PATHB)/%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
